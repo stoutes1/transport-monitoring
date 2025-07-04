@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Результаты расчета</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --background-color: rgba(255, 255, 255, 0.95);
+            --text-color: #2c3e50;
+            --table-header: #f1f5f9;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: url('/static/ivan-bandura-N_FDXbXwQmc-unsplash.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-color);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .result-card {
+            background: var(--background-color);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        h1, h2 {
+            color: var(--primary-color);
+            text-align: center;
+        }
+        
+        .optimal-badge {
+            background: var(--success-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 10px auto;
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: var(--table-header);
+            font-weight: 500;
+        }
+        
+        .optimal-row {
+            background-color: rgba(39, 174, 96, 0.1);
+            font-weight: 500;
+        }
+        
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            display: block;
+            margin: 30px auto;
+            text-align: center;
+            text-decoration: none;
+        }
+        
+        .btn:hover {
+            background: var(--secondary-color);
+        }
+        
+        .calculation-section {
+            background: rgba(241, 245, 249, 0.8);
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .cost-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .cost-item {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .pros-cons-section {
+            margin-top: 40px;
+        }
+        
+        .pros-cons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .option-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .optimal-option {
+            border: 2px solid var(--success-color);
+            background: rgba(39, 174, 96, 0.05);
+        }
+        
+        .pros ul {
+            color: var(--success-color);
+            padding-left: 20px;
+        }
+        
+        .cons ul {
+            color: var(--error-color);
+            padding-left: 20px;
+        }
+        
+        h4 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+        
+        h5 {
+            margin-bottom: 10px;
+        }
+        
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .highlight {
+            font-size: 1.2em;
+            font-weight: 500;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .modal-content {
+            background: var(--background-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="result-card">
+            <h1>Результаты расчета стоимости владения системой мониторинга транспорта</h1>
+            
+            <div class="summary-card">
+                <div style="text-align: center;">
+                    <div class="optimal-badge">Рекомендуемый вариант</div>
+                    <h2>{{ optimal[1].description }}</h2>
+                    <p class="highlight">Годовые затраты: <strong>{{ format_number(optimal[1]['next_years']) }} руб.</strong></p>
+                    <p>Затраты в первый год: <strong>{{ format_number(optimal[1]['first_year']) }} руб.</strong></p>
+                </div>
+            </div>
+            
+            <h2>Сравнение всех вариантов</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Вариант</th>
+                        <th>Первый год</th>
+                        <th>Последующие годы</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key, option in options.items() %}
+                    <tr {% if key == optimal[0] %}class="optimal-row"{% endif %}>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ option['description'] }}</td>
+                        <td>{{ format_number(option['first_year']) }} руб.</td>
+                        <td>{{ format_number(option['next_years']) }} руб.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <h2>Детализация затрат</h2>
+            {% for key, option in options.items() %}
+            <div class="calculation-section {% if key == optimal[0] %}optimal-option{% endif %}">
+                <h3>{{ option['description'] }}</h3>
+                <div class="cost-details">
+                    {% for item, value in option['details'].items() %}
+                    <div class="cost-item">
+                        <strong>{{ item }}:</strong> {{ format_number(value) }} руб.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+            
+            <h2>Преимущества и недостатки</h2>
+            <div class="pros-cons-section">
+                <div class="pros-cons-grid">
+                    {% for key, option in options.items() %}
+                    <div class="option-card {% if key == optimal[0] %}optimal-option{% endif %}">
+                        <h4>{{ option['description'] }}</h4>
+                        <div class="pros">
+                            <h5>Преимущества:</h5>
+                            <ul>
+                                {% for pro in option['pros'] %}
+                                <li>{{ pro }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="cons">
+                            <h5>Недостатки:</h5>
+                            <ul>
+                                {% for con in option['cons'] %}
+                                <li>{{ con }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#downloadModal">
+                    Выгрузить в Excel
+                </button>
+                
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#feedbackModal">
+                    Обратная связь
+                </button>
+            </div>
+            
+            <div class="footer">
+                <p>Данный калькулятор разработан при поддержке компании <a href="https://tempologic.ru" target="_blank" id="tempologicLink">TEMPOLOGIC.ru</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для скачивания -->
+    <div class="modal fade" id="downloadModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Скачать результаты</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="downloadForm">
+                        <div class="mb-3">
+                            <label for="downloadCompany" class="form-label">Компания</label>
+                            <input type="text" class="form-control" id="downloadCompany" name="company" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="downloadPosition" class="form-label">Должность</label>
+                            <input type="text" class="form-control" id="downloadPosition" name="position" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="downloadPhone" class="form-label">Телефон</label>
+                            <input type="tel" class="form-control" id="downloadPhone" name="phone" 
+                                   pattern="^(\+7|8)[0-9]{10}$" required>
+                            <div class="form-text">Формат: +79998887766 или 89998887766</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="downloadEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="downloadEmail" name="email" required>
+                        </div>
+                        {% for key, value in params.items() %}
+                        <input type="hidden" name="{{ key }}" value="{{ value }}">
+                        {% endfor %}
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-primary" id="downloadExcel">Скачать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для обратной связи -->
+    <div class="modal fade" id="feedbackModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Обратная связь</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="feedbackForm">
+                        <div class="mb-3">
+                            <label for="feedbackCompany" class="form-label">Компания</label>
+                            <input type="text" class="form-control" id="feedbackCompany" name="company" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="feedbackName" class="form-label">Ваше имя</label>
+                            <input type="text" class="form-control" id="feedbackName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="feedbackPhone" class="form-label">Телефон</label>
+                            <input type="tel" class="form-control" id="feedbackPhone" name="phone" 
+                                   pattern="^(\+7|8)[0-9]{10}$" required>
+                            <div class="form-text">Формат: +79998887766 или 89998887766</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="feedbackEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="feedbackEmail" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="feedbackMessage" class="form-label">Сообщение</label>
+                            <textarea class="form-control" id="feedbackMessage" name="message" rows="3" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-primary" id="sendFeedback">Отправить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Обработка клика по ссылке на tempologic.ru
+            $('#tempologicLink').on('click', function(e) {
+                e.preventDefault();
+                
+                // Собираем данные из формы скачивания, если они есть
+                const formData = {
+                    company: $('#downloadCompany').val() || '',
+                    position: $('#downloadPosition').val() || '',
+                    phone: $('#downloadPhone').val() || '',
+                    email: $('#downloadEmail').val() || ''
+                };
+                
+                // Отправляем уведомление о клике
+                $.ajax({
+                    type: 'POST',
+                    url: '/link_clicked',
+                    data: formData,
+                    success: function() {
+                        // После отправки уведомления открываем ссылку
+                        window.open('https://tempologic.ru', '_blank');
+                    },
+                    error: function() {
+                        // В случае ошибки все равно открываем ссылку
+                        window.open('https://tempologic.ru', '_blank');
+                    }
+                });
+            });
+
+            // Обработка формы скачивания
+            $('#downloadExcel').click(function() {
+                const form = $('#downloadForm')[0];
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+                
+                const formData = $('#downloadForm').serialize();
+                
+                // Показываем индикатор загрузки
+                $('#downloadExcel').html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Скачивание...');
+                $('#downloadExcel').prop('disabled', true);
+                
+                $.ajax({
+                    type: 'POST',
+                    url: '/download',
+                    data: formData,
+                    xhrFields: {
+                        responseType: 'blob'
+                    },
+                    success: function(blob, status, xhr) {
+                        // Проверяем, что это действительно файл
+                        const contentType = xhr.getResponseHeader('content-type');
+                        if (contentType !== 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+                            // Если это не Excel файл, возможно это JSON с ошибкой
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                try {
+                                    const error = JSON.parse(e.target.result);
+                                    alert(error.error || 'Произошла ошибка при генерации файла');
+                                } catch {
+                                    alert('Получен некорректный ответ от сервера');
+                                }
+                            };
+                            reader.readAsText(blob);
+                            return;
+                        }
+                        
+                        // Скачиваем файл
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'monitoring_calculation.xlsx';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                        $('#downloadModal').modal('hide');
+                        $('#downloadForm')[0].reset();
+                    },
+                    error: function(xhr) {
+                        try {
+                            const error = JSON.parse(xhr.responseText);
+                            alert(error.error || 'Произошла ошибка при генерации файла');
+                        } catch {
+                            alert('Произошла неизвестная ошибка');
+                        }
+                    },
+                    complete: function() {
+                        $('#downloadExcel').html('Скачать');
+                        $('#downloadExcel').prop('disabled', false);
+                    }
+                });
+            });
+            
+            // Обработка формы обратной связи
+            $('#sendFeedback').click(function() {
+                const form = $('#feedbackForm')[0];
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+                
+                const formData = $('#feedbackForm').serialize();
+                
+                $.ajax({
+                    type: 'POST',
+                    url: '/feedback',
+                    data: formData,
+                    success: function(response) {
+                        if (response.error) {
+                            alert(response.error);
+                        } else {
+                            $('#feedbackModal').modal('hide');
+                            alert(response.success);
+                            $('#feedbackForm')[0].reset();
+                        }
+                    },
+                    error: function(xhr) {
+                        try {
+                            const error = JSON.parse(xhr.responseText);
+                            alert(error.error || 'Произошла ошибка при отправке');
+                        } catch {
+                            alert('Произошла неизвестная ошибка');
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
